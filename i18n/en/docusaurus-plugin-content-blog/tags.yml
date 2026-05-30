@@ -1,0 +1,9 @@
+welcome:
+  label: Announcements
+  permalink: /welcome
+  description: Site announcements and notes
+
+tech:
+  label: Tech
+  permalink: /tech
+  description: Technical articles

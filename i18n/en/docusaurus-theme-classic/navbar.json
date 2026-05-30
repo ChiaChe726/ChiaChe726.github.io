@@ -1,0 +1,30 @@
+{
+  "title": {
+    "message": "Chia-Che",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "Logo",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.關於我": {
+    "message": "About",
+    "description": "Navbar item with label 關於我"
+  },
+  "item.label.作品集": {
+    "message": "Projects",
+    "description": "Navbar item with label 作品集"
+  },
+  "item.label.筆記": {
+    "message": "Notes",
+    "description": "Navbar item with label 筆記"
+  },
+  "item.label.部落格": {
+    "message": "Blog",
+    "description": "Navbar item with label 部落格"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}

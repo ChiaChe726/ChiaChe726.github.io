@@ -1,0 +1,99 @@
+.wrapper {
+  max-width: 820px;
+  padding-top: 3.5rem;
+  padding-bottom: 5rem;
+}
+
+.pageTitle {
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  font-weight: 800;
+  margin-bottom: 2rem;
+}
+
+.introCard {
+  padding: 2.2rem 2rem;
+  margin-bottom: 3rem;
+}
+
+.introText {
+  font-size: 1.1rem;
+  line-height: 1.85;
+  margin-bottom: 1rem;
+}
+.introText:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  margin-top: 1rem;
+}
+
+/* 技能標籤 */
+.skillTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-bottom: 3rem;
+}
+
+.skillTag {
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* 時間軸 */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.tlItem {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.6rem 1.8rem;
+}
+
+.tlPeriod {
+  flex: 0 0 130px;
+  font-weight: 700;
+  color: var(--ifm-color-primary);
+  font-size: 0.95rem;
+  padding-top: 0.2rem;
+}
+
+.tlBody {
+  flex: 1;
+}
+
+.tlTitle {
+  font-size: 1.2rem;
+  margin-bottom: 0.2rem;
+}
+
+.tlOrg {
+  font-weight: 600;
+  opacity: 0.75;
+  margin-bottom: 0.5rem;
+}
+
+.tlDesc {
+  line-height: 1.7;
+  opacity: 0.82;
+  margin-bottom: 0;
+}
+
+@media screen and (max-width: 600px) {
+  .tlItem {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .tlPeriod {
+    flex-basis: auto;
+  }
+}

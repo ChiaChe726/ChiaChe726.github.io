@@ -10,8 +10,8 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Chia-Che's Website",
-  tagline: 'Dinosaurs are cool',
+  title: "Chia-Che",
+  tagline: '軟體工程師 · 打造好用的產品與工具',
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -46,6 +46,11 @@ const config = {
 
   onBrokenLinks: 'throw',
 
+  // 載入網頁字體:Inter(拉丁)+ Noto Sans TC(中文)
+  stylesheets: [
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap',
+  ],
+
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
@@ -61,10 +66,8 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/ChiaChe726/ChiaChe726.github.io/tree/main/',
+          // 把文件區當作「筆記」,網址改成 /notes
+          routeBasePath: 'notes',
         },
         blog: {
           showReadingTime: true,
@@ -72,10 +75,6 @@ const config = {
             type: ['rss', 'atom'],
             xslt: true,
           },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/ChiaChe726/ChiaChe726.github.io/tree/main/',
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
@@ -97,21 +96,27 @@ const config = {
         respectPrefersColorScheme: true,
       },
       navbar: {
-        title: 'Chia-Che\'s Website',
+        title: 'Chia-Che',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'Logo',
           src: 'img/logo.svg',
         },
         items: [
+          {to: '/about', label: '關於我', position: 'left'},
+          {to: '/projects', label: '作品集', position: 'left'},
           {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Tutorial',
+            label: '筆記',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          {to: '/blog', label: '部落格', position: 'left'},
           {
-            href: 'https://github.com/ChiaChe726/ChiaChe726.github.io',
+            type: 'localeDropdown',
+            position: 'right',
+          },
+          {
+            href: 'https://github.com/ChiaChe726',
             label: 'GitHub',
             position: 'right',
           },
@@ -121,46 +126,25 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'Docs',
+            title: '網站',
             items: [
-              {
-                label: 'Tutorial',
-                to: '/docs/intro',
-              },
+              {label: '關於我', to: '/about'},
+              {label: '作品集', to: '/projects'},
+              {label: '筆記', to: '/notes/intro'},
+              {label: '部落格', to: '/blog'},
             ],
           },
           {
-            title: 'Community',
+            title: '聯絡 / 社群',
             items: [
-              {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-              },
-              {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'X',
-                href: 'https://x.com/docusaurus',
-              },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              {
-                label: 'Blog',
-                to: '/blog',
-              },
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/ChiaChe726',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Chia-Che. Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,
