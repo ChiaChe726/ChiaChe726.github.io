@@ -14,6 +14,8 @@ updates:
     # 大改版(major)維持獨立 PR,因為比較可能弄壞網站,要單獨檢視。
     groups:
       minor-and-patch:
+        patterns:
+          - "*"                # 比對所有套件(讓分組意圖明確)
         update-types:
           - "minor"
           - "patch"
