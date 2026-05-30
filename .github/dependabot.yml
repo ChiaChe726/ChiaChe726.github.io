@@ -1,0 +1,31 @@
+# Dependabot 設定檔
+# 讓機器人自動檢查套件版本、發 PR 幫忙更新(包含修掉資安漏洞的版本)
+# 文件:https://docs.github.com/code-security/dependabot/dependabot-version-updates
+
+version: 2
+updates:
+  # ── npm 套件(Docusaurus、React 等)──
+  - package-ecosystem: "npm"
+    directory: "/"            # package.json 的位置(專案根目錄)
+    schedule:
+      interval: "weekly"      # 每週檢查一次,而不是每天洗版
+    open-pull-requests-limit: 5
+    # 把小改版(minor / patch)合併成「一個」PR,避免一個漏洞開一個 PR。
+    # 大改版(major)維持獨立 PR,因為比較可能弄壞網站,要單獨檢視。
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"                # 比對所有套件(讓分組意圖明確)
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "deps"
+
+  # ── GitHub Actions(顧到 .github/workflows 裡的 action 版本)──
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"

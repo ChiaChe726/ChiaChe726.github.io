@@ -1,0 +1,32 @@
+# 自動合併 Dependabot 開的「小改版」更新 PR(patch / minor)。
+# 大改版(major)不自動合,留給你手動檢視,因為比較可能弄壞網站。
+#
+# 注意:這需要在 repo 的 Settings → General 勾選 "Allow auto-merge"。
+# 合併會等 CI(上面的 build)通過後才真的發生,不會盲合。
+name: Dependabot auto-merge
+
+on: pull_request_target
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    # 只處理 Dependabot 自己開的 PR
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      # patch / minor → 開啟 auto-merge(CI 綠了才會真的合)
+      - name: Enable auto-merge for minor/patch updates
+        if: steps.meta.outputs.update-type == 'version-update:semver-patch' || steps.meta.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

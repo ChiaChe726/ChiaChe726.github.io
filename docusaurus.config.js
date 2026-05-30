@@ -16,7 +16,20 @@ const config = {
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
-    v4: true, // Improve compatibility with the upcoming Docusaurus v4
+    // Keep v4 compatibility flags on, but expand the `v4: true` shortcut so we
+    // can opt out of two sub-flags that would otherwise break this site as of
+    // Docusaurus 3.10:
+    //   - fasterByDefault: requires installing the extra `@docusaurus/faster`
+    //     package (Rspack/SWC native deps), which we don't want here.
+    //   - mdx1CompatDisabledByDefault: tightens MDX parsing and rejects the
+    //     `<!-- truncate -->` HTML comments used by the default blog posts.
+    v4: {
+      removeLegacyPostBuildHeadAttribute: true,
+      useCssCascadeLayers: true,
+      siteStorageNamespacing: true,
+      fasterByDefault: false,
+      mdx1CompatDisabledByDefault: false,
+    },
   },
 
   // Set the production url of your site here
