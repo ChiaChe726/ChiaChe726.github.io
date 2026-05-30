@@ -1,23 +1,74 @@
 /**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
+ * 首頁 hero 樣式(液態玻璃 + 橘調光暈)。
+ * .module.css 後綴會被當成 CSS Module、自動 scope。
  */
 
 .heroBanner {
-  padding: 4rem 0;
-  text-align: center;
   position: relative;
   overflow: hidden;
+  padding: 7rem 0 6rem;
+  text-align: center;
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+/* 背景柔和光暈,營造液態玻璃的景深 */
+.halo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(40rem 30rem at 20% 10%, var(--halo-1), transparent 60%),
+    radial-gradient(35rem 28rem at 85% 30%, var(--halo-2), transparent 60%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.heroEyebrow {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ifm-color-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.heroTitle {
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  margin-bottom: 1rem;
+}
+
+.heroSubtitle {
+  font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+  font-weight: 600;
+  color: var(--ifm-heading-color);
+  margin-bottom: 1rem;
+}
+
+.heroDescription {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--ifm-font-color-base);
+  opacity: 0.85;
+  margin-bottom: 2.5rem;
 }
 
 .buttons {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width: 768px) {
+  .heroBanner {
+    padding: 4.5rem 1rem 4rem;
+  }
 }

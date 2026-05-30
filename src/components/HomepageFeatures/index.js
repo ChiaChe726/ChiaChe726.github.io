@@ -1,49 +1,55 @@
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
+import Translate from '@docusaurus/Translate';
 import styles from './styles.module.css';
 
+/**
+ * 首頁亮點區。要替換內容,改下面這個陣列即可:
+ *   icon  — 顯示的 emoji(或之後換成圖示)
+ *   title — 卡片標題(用 <Translate> 包住才能雙語)
+ *   description — 卡片說明
+ */
 const FeatureList = [
   {
-    title: 'Easy to Use',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    icon: '🛠️',
+    title: <Translate id="features.build.title">打造產品</Translate>,
     description: (
-      <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
-      </>
+      <Translate id="features.build.desc">
+        從零到一把想法做成好用的產品,注重使用體驗與細節。
+      </Translate>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    icon: '⚡',
+    title: <Translate id="features.code.title">技術實作</Translate>,
     description: (
-      <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
-      </>
+      <Translate id="features.code.desc">
+        熟悉前後端開發,喜歡用乾淨、可維護的程式碼解決真實問題。
+      </Translate>
     ),
   },
   {
-    title: 'Powered by React',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    icon: '🌱',
+    title: <Translate id="features.learn.title">持續學習</Translate>,
     description: (
-      <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
-      </>
+      <Translate id="features.learn.desc">
+        保持好奇心,把學到的東西寫成筆記與文章,也樂於分享。
+      </Translate>
     ),
   },
 ];
 
-function Feature({Svg, title, description}) {
+function Feature({icon, title, description}) {
   return (
     <div className={clsx('col col--4')}>
-      <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
-      </div>
-      <div className="text--center padding-horiz--md">
-        <Heading as="h3">{title}</Heading>
-        <p>{description}</p>
+      <div className={clsx('glass glass-hover', styles.card)}>
+        <div className={styles.cardIcon} role="img" aria-hidden="true">
+          {icon}
+        </div>
+        <Heading as="h3" className={styles.cardTitle}>
+          {title}
+        </Heading>
+        <p className={styles.cardDesc}>{description}</p>
       </div>
     </div>
   );

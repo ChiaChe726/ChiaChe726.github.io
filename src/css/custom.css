@@ -1,30 +1,133 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * 全站樣式。基底是 Docusaurus 的 Infima CSS 框架,我們在這裡覆寫變數,
+ * 做出「iOS 26 液態玻璃 / Liquid Glass」+ 橘調 + 簡約的個人網站風格。
+ *
+ * 設計重點:
+ *   - 橘調主色(珊瑚橘),亮暗兩套精心調過的色票
+ *   - 半透明毛玻璃卡片(backdrop-filter blur)、大圓角、柔和陰影景深
+ *   - 大量留白、大字粗標題
  */
 
-/* You can override the default Infima variables here. */
+/* ── 字體:Inter(拉丁)+ Noto Sans TC(中文),由 config 的 stylesheets 載入 ── */
+
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  /* 橘調主色階層(亮色模式) */
+  --ifm-color-primary: #f2622e;
+  --ifm-color-primary-dark: #e9531d;
+  --ifm-color-primary-darker: #dc4e1b;
+  --ifm-color-primary-darkest: #b54016;
+  --ifm-color-primary-light: #f47a4d;
+  --ifm-color-primary-lighter: #f6855b;
+  --ifm-color-primary-lightest: #f9a384;
+
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.07);
+
+  /* 字體 */
+  --ifm-font-family-base: 'Inter', 'Noto Sans TC', -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ifm-heading-font-weight: 700;
+
+  /* 背景與文字(亮:米白底、深炭字,仿 iOS 的柔和不死白/不死黑) */
+  --ifm-background-color: #faf9f7;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-font-color-base: #1c1c1e;
+  --ifm-heading-color: #111113;
+
+  /* 圓角:iOS 風格大圓角 */
+  --ifm-global-radius: 14px;
+
+  /* ── 液態玻璃自訂變數(亮) ── */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-blur: 18px;
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  --glass-shadow-hover: 0 16px 48px rgba(242, 98, 46, 0.16),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+  /* hero 背景光暈 */
+  --halo-1: rgba(242, 98, 46, 0.22);
+  --halo-2: rgba(249, 163, 132, 0.18);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* 暗色模式:深炭底(非死黑,仿 iOS)、柔白字、提亮的橘 */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: #ff8a5c;
+  --ifm-color-primary-dark: #ff744a;
+  --ifm-color-primary-darker: #ff6a35;
+  --ifm-color-primary-darkest: #ff4f12;
+  --ifm-color-primary-light: #ffa07c;
+  --ifm-color-primary-lighter: #ffac8d;
+  --ifm-color-primary-lightest: #ffc8b3;
+
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
+
+  --ifm-background-color: #161618;
+  --ifm-background-surface-color: #1f1f22;
+  --ifm-font-color-base: #ececf1;
+  --ifm-heading-color: #f7f7f9;
+
+  /* ── 液態玻璃自訂變數(暗) ── */
+  --glass-bg: rgba(40, 40, 44, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 20px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.25);
+  --glass-shadow-hover: 0 16px 48px rgba(255, 138, 92, 0.22),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+  --halo-1: rgba(255, 138, 92, 0.2);
+  --halo-2: rgba(255, 110, 60, 0.14);
+}
+
+/* ── 液態玻璃工具 class(各頁卡片重用) ── */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+/* 大標題更有份量、字距微調 */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+}
+
+/* 按鈕:大圓角、柔和過場 */
+.button {
+  border-radius: 999px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.button:hover {
+  transform: translateY(-2px);
+}
+
+/* navbar 也帶一點毛玻璃 */
+.navbar {
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+/* 尊重使用者「減少動態效果」的系統設定 */
+@media (prefers-reduced-motion: reduce) {
+  .glass,
+  .button,
+  .glass-hover:hover,
+  .button:hover {
+    transition: none;
+    transform: none;
+  }
 }
