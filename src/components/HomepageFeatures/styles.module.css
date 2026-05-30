@@ -31,7 +31,7 @@
 
 /* 卡片之間在小螢幕保留間距 */
 @media screen and (max-width: 996px) {
-  .features .col {
+  .features :global(.col) {
     margin-bottom: 1.5rem;
   }
 }

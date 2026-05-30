@@ -68,7 +68,11 @@ function ProjectCard({emoji, title, description, tags, link}) {
           ))}
         </div>
         {link && (
-          <Link className={clsx('button button--primary', styles.cardBtn)} to={link}>
+          <Link
+            className={clsx('button button--primary', styles.cardBtn)}
+            to={link}
+            target="_blank"
+            rel="noopener noreferrer">
             <Translate id="projects.viewButton">查看專案 →</Translate>
           </Link>
         )}

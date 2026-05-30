@@ -27,7 +27,7 @@ const skills = [
  */
 const timeline = [
   {
-    period: '2023 — 現在',
+    period: <Translate id="about.tl.job1.period">2023 — 現在</Translate>,
     title: <Translate id="about.tl.job1.title">軟體工程師</Translate>,
     org: <Translate id="about.tl.job1.org">某科技公司</Translate>,
     desc: (
@@ -37,7 +37,7 @@ const timeline = [
     ),
   },
   {
-    period: '2019 — 2023',
+    period: <Translate id="about.tl.edu1.period">2019 — 2023</Translate>,
     title: <Translate id="about.tl.edu1.title">資訊工程學士</Translate>,
     org: <Translate id="about.tl.edu1.org">某大學</Translate>,
     desc: (

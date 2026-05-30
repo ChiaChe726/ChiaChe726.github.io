@@ -436,5 +436,11 @@
   "theme.tags.tagsPageTitle": {
     "message": "Tags",
     "description": "The title of the tag list page"
+  },
+  "about.tl.job1.period": {
+    "message": "2023 — Present"
+  },
+  "about.tl.edu1.period": {
+    "message": "2019 — 2023"
   }
 }
