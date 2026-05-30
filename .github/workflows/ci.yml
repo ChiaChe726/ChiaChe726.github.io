@@ -1,0 +1,31 @@
+# 在每次 push 到 main 與每個 PR 上,確認網站還能正常 build。
+# 這個檢查的綠燈,也是下面 dependabot-auto-merge 自動合併的前提門檻。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 只跑最新一次;同分支有新 push 時取消舊的,省時間。
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
