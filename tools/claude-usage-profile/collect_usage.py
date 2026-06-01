@@ -102,14 +102,16 @@ def _find_model(obj):
         for k, v in obj.items():
             if k == "model" and isinstance(v, str) and v:
                 return v
-            r = _find_model(v)
-            if r:
-                return r
+            if isinstance(v, (dict, list)):
+                r = _find_model(v)
+                if r:
+                    return r
     elif isinstance(obj, list):
         for v in obj:
-            r = _find_model(v)
-            if r:
-                return r
+            if isinstance(v, (dict, list)):
+                r = _find_model(v)
+                if r:
+                    return r
     return None
 
 
@@ -175,9 +177,10 @@ def collect_codex(by_model, by_day):
                         continue
                     if not isinstance(d, dict):
                         continue
-                    m = _find_model(d)
-                    if m and ("gpt" in m.lower() or "codex" in m.lower() or m.lower().startswith("o")):
-                        model = m
+                    if not model:  # 單一 session 通常單一 model,找到就不必再找
+                        m = _find_model(d)
+                        if m and ("gpt" in m.lower() or "codex" in m.lower() or m.lower().startswith("o")):
+                            model = m
                     payload = d.get("payload")
                     if isinstance(payload, dict) and payload.get("type") == "token_count":
                         info = payload.get("info") or {}
@@ -212,7 +215,8 @@ def _otlp_points(obj, out):
     從 OTLP/JSON(OpenTelemetry)結構遞迴抓出 gemini_cli.token.usage 的資料點。
     結構大致為:
       resourceMetrics[].scopeMetrics[].metrics[]{name, sum/gauge.dataPoints[]{attributes, asInt}}
-    盡力容錯:格式會因 OTEL 版本而異,抓不到就回傳空。
+    每筆回傳 (model, type, group, val);group 用 startTimeUnixNano 或 session.id,
+    用來區分「不同次 CLI 執行」的累計過程。盡力容錯,抓不到就回傳空。
     """
     if isinstance(obj, dict):
         if obj.get("name") == "gemini_cli.token.usage":
@@ -231,12 +235,16 @@ def _otlp_points(obj, out):
                     val = int(val)
                 except Exception:
                     val = 0
-                out.append((attrs.get("model"), attrs.get("type"), val))
+                # 分組鍵:同一次 CLI 執行(process)的累計,startTime 相同
+                group = dp.get("startTimeUnixNano") or attrs.get("session.id") or "_"
+                out.append((attrs.get("model"), attrs.get("type"), group, val))
         for v in obj.values():
-            _otlp_points(v, out)
+            if isinstance(v, (dict, list)):
+                _otlp_points(v, out)
     elif isinstance(obj, list):
         for v in obj:
-            _otlp_points(v, out)
+            if isinstance(v, (dict, list)):
+                _otlp_points(v, out)
 
 
 def collect_gemini(by_model, by_day):
@@ -253,29 +261,32 @@ def collect_gemini(by_model, by_day):
                 text = f.read()
         except Exception:
             continue
-        # (a) 逐行 JSON(OTLP json-lines)
-        for line in text.splitlines():
-            line = line.strip()
-            if not line or line[0] not in "[{":
-                continue
-            try:
-                _otlp_points(json.loads(line), points)
-            except Exception:
-                continue
-        # (b) 整檔是一個大 JSON
+        # 優先整檔解析(單一 OTLP JSON);失敗再逐行(OTLP json-lines)。
+        # 不可兩種都做 — 單行單一 JSON 會被解析兩次而重複計算。
         try:
             _otlp_points(json.loads(text), points)
         except Exception:
-            pass
+            for line in text.splitlines():
+                line = line.strip()
+                if not line or line[0] not in "[{":
+                    continue
+                try:
+                    _otlp_points(json.loads(line), points)
+                except Exception:
+                    continue
 
-    # gemini_cli.token.usage 是累計型 Counter:同一 (model,type) 取最大值(最後累計),
-    # 避免把多次輸出的累計值重複相加而高估。(此塊為實驗性,數字若不對請回報樣本校正)
-    agg = {}
-    for model, typ, val in points:
+    # gemini_cli.token.usage 是累計型 Counter:同一次執行(同 group)內取最大值(最後累計),
+    # 不同次執行(不同 group)則相加 — 既不在單次內重複累加、也不漏掉其他執行回合。
+    # (此塊為實驗性:OTEL temporality/格式會因版本而異,數字若不對請回報樣本校正)
+    per_group = {}  # (model, type, group) -> 該次累計最大值
+    for model, typ, group, val in points:
         if not val:
             continue
-        key = (model or "gemini", (typ or "").lower())
-        agg[key] = max(agg.get(key, 0), val)
+        key = (model or "gemini", (typ or "").lower(), group)
+        per_group[key] = max(per_group.get(key, 0), val)
+    agg = defaultdict(int)  # (model, type) -> 各次執行最大值之和
+    for (model, t, _group), val in per_group.items():
+        agg[(model, t)] += val
     for (model, t), val in agg.items():
         b = by_model[model]
         b["provider"] = "gemini"
