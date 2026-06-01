@@ -1,10 +1,18 @@
-# 安裝說明 — 在 GitHub 首頁顯示 Claude Code 使用量
+# 安裝說明 — 在 GitHub 首頁顯示你的 AI 使用量
 
-這套工具會把你**每台電腦**的 Claude Code 使用量,自動彙總成一張卡片,
+這套工具會把你**每台電腦**的 AI CLI 使用量,自動彙總成一張卡片,
 顯示在你的 GitHub 個人首頁(像 GitHub 統計卡那樣)。
+
+**支援的來源:**
+- 🟣 **Claude Code**(`~/.claude`)— 自動,無需設定
+- 🟢 **OpenAI Codex CLI**(`~/.codex`)— 自動,無需設定
+- 🔵 **Gemini CLI**(`~/.gemini`)— 需先開啟 local telemetry(見二之 4)
 
 > 🔐 **隱私**:腳本只取「數字」(token 數、model 名稱、日期),
 > **不會**讀取或上傳你的對話內容、檔案路徑或專案名稱。
+>
+> ℹ️ 純網頁/App 版(ChatGPT、Claude.ai、Gemini 網頁)官方**不提供**個人逐 token
+> 用量、也沒有本機紀錄,所以無法統計 — 只有「命令列工具」的用量收得到。
 
 ---
 
@@ -69,6 +77,27 @@ git add . && git commit -m "Add Claude usage card" && git push
 ```
 打開 https://github.com/ChiaChe726 ,卡片就出現了 🎉
 
+### 4.(選用)想一起統計 Gemini CLI?
+Claude Code 和 Codex 本來就會記錄用量,**不用做任何設定**。
+但 Gemini CLI 預設不記 token,要手動開啟「本機 telemetry」。
+編輯 `~/.gemini/settings.json`,加入:
+
+```json
+{
+  "telemetry": {
+    "enabled": true,
+    "target": "local",
+    "outfile": "~/.gemini/telemetry.log"
+  }
+}
+```
+
+之後用 Gemini CLI 時就會把用量寫進 `~/.gemini/telemetry.log`,
+`collect_usage.py` 會自動讀取彙總。
+
+> ⚠️ Gemini 的 log 是 OpenTelemetry 格式、版本間略有差異。若卡片上的 Gemini
+> 數字看起來不對,把 `~/.gemini/telemetry.log` 前幾行貼出來,就能校正解析邏輯。
+
 ---
 
 ## 三、讓它「每次用完自動更新」(選用)
@@ -104,7 +133,12 @@ git add . && git commit -m "Add Claude usage card" && git push
 ## 常見問題
 
 **Q：卡片數字沒變？**
-A：先確認 `~/.claude/projects/` 裡有 `.jsonl` 檔(用過 Claude Code 就會有)。
+A：先確認對應來源有資料 — Claude 看 `~/.claude/projects/`、Codex 看 `~/.codex/sessions/`
+是否有 `.jsonl` 檔;Gemini 要先開 telemetry(二之 4)並確認 `~/.gemini/telemetry.log` 有內容。
+
+**Q：我只用其中幾種 AI,可以嗎？**
+A：可以。沒裝的來源會自動略過、不影響其他。例如只用 Claude + Codex,
+Gemini 那塊就是 0、卡片上也不會列出來。
 
 **Q：成本是真的花費嗎？**
 A：**不是**。如果你用 Max/Pro 訂閱,是固定月費、不是按 token 計費。
