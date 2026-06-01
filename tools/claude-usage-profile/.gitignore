@@ -1,0 +1,8 @@
+# 這是在 chiache726.github.io repo 裡的「工具範本」。
+# 真實的使用量資料應該被推到你的 profile repo(ChiaChe726/ChiaChe726),
+# 不要意外 commit 進這個網站 repo,所以在這裡忽略掉。
+#
+# 注意:當你把這個資料夾複製到 profile repo 後,
+#       要「移除」這個 .gitignore(或拿掉 data/usage 那行),
+#       因為在 profile repo 裡你『需要』commit data/usage/*.json。
+data/usage/*.json
