@@ -6,3 +6,7 @@
 #       要「移除」這個 .gitignore(或拿掉 data/usage 那行),
 #       因為在 profile repo 裡你『需要』commit data/usage/*.json。
 data/usage/*.json
+
+# Python 編譯快取
+__pycache__/
+*.pyc
