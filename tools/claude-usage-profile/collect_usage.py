@@ -72,6 +72,8 @@ def main():
                         d = json.loads(line)
                     except Exception:
                         continue
+                    if not isinstance(d, dict):
+                        continue
                     if d.get("type") != "assistant":
                         continue
                     msg = d.get("message", {})

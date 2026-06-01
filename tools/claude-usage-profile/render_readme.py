@@ -49,7 +49,8 @@ def load_all():
     by_day = defaultdict(int)
     for fp in sorted(glob.glob(os.path.join(HERE, "data", "usage", "usage-*.json"))):
         try:
-            d = json.load(open(fp, encoding="utf-8"))
+            with open(fp, encoding="utf-8") as f:
+                d = json.load(f)
         except Exception:
             continue
         machines.append({
@@ -153,11 +154,13 @@ def main():
     if not os.path.exists(readme):
         # 沒有 README 就建一個基本的
         content = f"# Hi 👋\n\n{card}\n"
-        open(readme, "w", encoding="utf-8").write(content)
+        with open(readme, "w", encoding="utf-8") as f:
+            f.write(content)
         print(f"✅ 已建立 {readme}")
         return
 
-    text = open(readme, encoding="utf-8").read()
+    with open(readme, encoding="utf-8") as f:
+        text = f.read()
     if START in text and END in text:
         before = text[: text.index(START)]
         after = text[text.index(END) + len(END):]
@@ -167,7 +170,8 @@ def main():
         new = text.rstrip() + "\n\n" + card + "\n"
 
     if new != text:
-        open(readme, "w", encoding="utf-8").write(new)
+        with open(readme, "w", encoding="utf-8") as f:
+            f.write(new)
         print(f"✅ 已更新 {readme}")
     else:
         print("（無變更)")

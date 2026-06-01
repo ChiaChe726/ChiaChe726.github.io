@@ -36,8 +36,10 @@
 git clone https://github.com/ChiaChe726/ChiaChe726.git
 cd ChiaChe726
 
-# 把工具檔案放進來(collect_usage.py / render_readme.py / push_usage.sh)
-# 然後用 README.template.md 當作你的 README.md 起點
+# 把「整個」 tools/ 資料夾複製進來(保留資料夾結構,後面的指令才對得上)
+#   結果應該是:ChiaChe726/tools/claude-usage-profile/collect_usage.py ...
+# 然後用 tools/claude-usage-profile/README.template.md 當作你的 README.md 起點:
+cp tools/claude-usage-profile/README.template.md README.md
 ```
 
 ### 2. 給這台電腦取個名字(選用,但建議)
@@ -52,16 +54,20 @@ source ~/.zshrc
 不設也可以,預設會用電腦的主機名稱。
 
 ### 3. 跑一次試試看
+最簡單的方式是直接用一鍵腳本(它會自動處理路徑、更新根目錄 README 並推送):
 ```bash
 cd ChiaChe726          # 你的 profile repo
-python3 tools/claude-usage-profile/collect_usage.py
-python3 tools/claude-usage-profile/render_readme.py
+./tools/claude-usage-profile/push_usage.sh
 ```
-打開 `README.md`,應該看到使用量卡片。沒問題就 push:
+
+或想分步手動跑也可以:
 ```bash
+cd ChiaChe726
+python3 tools/claude-usage-profile/collect_usage.py
+python3 tools/claude-usage-profile/render_readme.py --readme README.md
 git add . && git commit -m "Add Claude usage card" && git push
 ```
-然後打開 https://github.com/ChiaChe726 ,卡片就出現了 🎉
+打開 https://github.com/ChiaChe726 ,卡片就出現了 🎉
 
 ---
 
