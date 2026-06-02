@@ -40,15 +40,19 @@ else
   USAGE_DIR="data/usage"
 fi
 
-# 只有真的有變更才 commit
-if git diff --quiet -- README.md "$USAGE_DIR" 2>/dev/null; then
+# 把要追蹤的檔案加進來(-f 強制,繞過範本帶來的 .gitignore 對 data/usage 的忽略)。
+# 之後用 --cached 比對:這樣「第一次推、全新空 repo」那種「新檔案」也偵測得到
+# —— git diff(working tree)不會看 untracked 檔,會把新檔案誤判成「沒變化」。
+git add -f README.md 2>/dev/null || true
+git add -f "$USAGE_DIR" 2>/dev/null || true
+
+if git diff --cached --quiet; then
   echo "ℹ️ 使用量沒有變化,不需要推送。"
   exit 0
 fi
 
 echo "▶ 提交並推送…"
-git add README.md "$USAGE_DIR"
-git commit -q -m "chore: update Claude Code usage stats" || true
+git commit -q -m "chore: update AI usage stats" || true
 
 # 推送 + 網路失敗時退避重試(2s,4s,8s,16s)
 branch="$(git rev-parse --abbrev-ref HEAD)"

@@ -62,18 +62,25 @@ source ~/.zshrc
 不設也可以,預設會用電腦的主機名稱。
 
 ### 3. 跑一次試試看
-最簡單的方式是直接用一鍵腳本(它會自動處理路徑、更新根目錄 README 並推送):
+直接用一鍵腳本(會自動收集、更新根目錄 README、commit 並推送):
 ```bash
 cd ChiaChe726          # 你的 profile repo
-./tools/claude-usage-profile/push_usage.sh
+
+# 🆕 全新空 repo 第一次:先確保分支叫 main
+#    (GitHub 個人首頁只會顯示「預設分支 main」的 README)
+git checkout -b main 2>/dev/null || git checkout main
+
+bash tools/claude-usage-profile/push_usage.sh
 ```
 
 或想分步手動跑也可以:
 ```bash
 cd ChiaChe726
+git checkout -b main 2>/dev/null || git checkout main   # 第一次:確保 main 分支
 python3 tools/claude-usage-profile/collect_usage.py
 python3 tools/claude-usage-profile/render_readme.py --readme README.md
-git add . && git commit -m "Add Claude usage card" && git push
+git add -A && git add -f tools/claude-usage-profile/data/usage   # -f 繞過 .gitignore
+git commit -m "Add AI usage card" && git push -u origin main
 ```
 打開 https://github.com/ChiaChe726 ,卡片就出現了 🎉
 
