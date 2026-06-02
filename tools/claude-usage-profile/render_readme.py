@@ -41,7 +41,7 @@ def badge(label: str, value: str, color: str) -> str:
 
 
 def load_all():
-    by_model = defaultdict(lambda: {"in": 0, "out": 0, "cw": 0, "cr": 0, "msgs": 0, "est_cost_usd": 0.0})
+    by_model = defaultdict(lambda: {"in": 0, "out": 0, "cw": 0, "cr": 0, "msgs": 0, "est_cost_usd": 0.0, "provider": "claude"})
     machines = []
     total_tokens = 0
     total_msgs = 0
@@ -64,12 +64,20 @@ def load_all():
         total_cost += d.get("est_cost_usd", 0.0)
         for model, b in (d.get("by_model") or {}).items():
             t = by_model[model]
+            t["provider"] = b.get("provider", "claude")
             for k in ["in", "out", "cw", "cr", "msgs"]:
                 t[k] += b.get(k, 0)
             t["est_cost_usd"] += b.get("est_cost_usd", 0.0)
         for day, tok in (d.get("by_day") or {}).items():
             by_day[day] += tok
     return by_model, machines, total_tokens, total_msgs, total_cost, by_day
+
+
+PROVIDER_LABEL = {
+    "claude": "🟣 Claude",
+    "codex": "🟢 OpenAI Codex",
+    "gemini": "🔵 Gemini",
+}
 
 
 def render():
@@ -80,6 +88,9 @@ def render():
             f"{START}\n\n_尚無使用量資料。請先在本機跑 `collect_usage.py`。_\n\n{END}"
         )
 
+    def mtok(b):
+        return b["in"] + b["out"] + b["cw"] + b["cr"]
+
     # 徽章
     badges = " ".join([
         badge("Total Tokens", human(total_tokens), ACCENT),
@@ -87,17 +98,37 @@ def render():
         badge("Est. API Value", f"${total_cost:,.0f}", "555555"),
     ])
 
-    # 各 model 表格(依 token 由多到少)
-    def mtok(b):
-        return b["in"] + b["out"] + b["cw"] + b["cr"]
+    # 各 AI 來源加總(依 token 由多到少);只有一種來源就不顯示(會跟總和重複)
+    prov = defaultdict(lambda: {"tok": 0, "msgs": 0, "cost": 0.0})
+    for model, b in by_model.items():
+        pv = prov[b.get("provider", "claude")]
+        pv["tok"] += mtok(b)
+        pv["msgs"] += b["msgs"]
+        pv["cost"] += b["est_cost_usd"]
+    source_block = ""
+    if len(prov) > 1:
+        srows = "\n".join(
+            f"| {PROVIDER_LABEL.get(k, k)} | {human(v['tok'])} | {v['msgs']:,} | ${v['cost']:,.0f} |"
+            for k, v in sorted(prov.items(), key=lambda x: -x[1]["tok"])
+        )
+        source_block = (
+            "**各 AI 來源**\n\n"
+            "| 來源 | Tokens | 訊息/回合 | 估算 API 等值 |\n"
+            "|------|-------:|------:|------:|\n" + srows + "\n\n"
+        )
+
+    # 各模型表格(依 token 由多到少,標出來源)
     rows = []
     for model, b in sorted(by_model.items(), key=lambda x: -mtok(x[1])):
+        label = PROVIDER_LABEL.get(b.get("provider", "claude"), b.get("provider", "claude"))
+        short = label.split(" ", 1)[-1]  # 去掉 emoji 當欄位文字
         rows.append(
-            f"| `{model}` | {human(mtok(b))} | {b['msgs']:,} | ${b['est_cost_usd']:,.0f} |"
+            f"| `{model}` | {short} | {human(mtok(b))} | {b['msgs']:,} | ${b['est_cost_usd']:,.0f} |"
         )
     model_table = (
-        "| 模型 | Tokens | 訊息數 | 估算 API 等值 |\n"
-        "|------|-------:|------:|------:|\n" + "\n".join(rows)
+        "**各模型**\n\n"
+        "| 模型 | 來源 | Tokens | 訊息 | 估算 API 等值 |\n"
+        "|------|------|-------:|------:|------:|\n" + "\n".join(rows)
     )
 
     # 多台電腦時,列出各台
@@ -126,13 +157,13 @@ def render():
 
     card = f"""{START}
 
-### 🤖 我的 Claude Code 使用量
+### 🤖 我的 AI 使用量
 
 {badges}
 
-{model_table}{machine_block}{spark}
+{source_block}{model_table}{machine_block}{spark}
 
-<sub>📊 由 Claude Code 本機用量自動產生 · 成本為 <b>API 等值估算</b>(訂閱制非按 token 計費)· 最後更新 {updated}</sub>
+<sub>📊 由本機各 AI CLI 用量自動產生 · 成本為 <b>API 等值估算</b>(訂閱制非按 token 計費)· 最後更新 {updated}</sub>
 
 {END}"""
     return card
