@@ -81,7 +81,7 @@ def build_heatmap_svg(by_day, total_tokens=0, sources=None, weeks=53):
         r = v / mx
         return 4 if r >= 1 else 1 + min(3, int(r * 4))
 
-    pad, left, top = 16, 30, 64
+    pad, left, top = 16, 30, 48
     grid_w = weeks * PITCH
     W = pad * 2 + left + grid_w
     H = top + 7 * PITCH + 40
@@ -90,14 +90,13 @@ def build_heatmap_svg(by_day, total_tokens=0, sources=None, weeks=53):
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
         f'viewBox="0 0 {W} {H}" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">',
         f'<rect width="{W}" height="{H}" rx="12" fill="{HM_CARD}"/>',
-        f'<text x="{pad}" y="28" fill="{HM_TEXT}" font-size="17" font-weight="700">My AI Usage</text>',
-        f'<text x="{pad}" y="48" fill="#ff7a45" font-size="13" font-weight="600">{human(total_tokens)} tokens</text>',
+        f'<text x="{pad}" y="29" fill="#ff7a45" font-size="16" font-weight="700">{human(total_tokens)} tokens</text>',
     ]
     if sources:
-        sx = pad + 128
+        sx = pad + 140
         for name, color, tok in sources:
-            p.append(f'<circle cx="{sx+4}" cy="44" r="4" fill="{color}"/>')
-            p.append(f'<text x="{sx+12}" y="48" fill="{HM_MUTED}" font-size="11">{name} {human(tok)}</text>')
+            p.append(f'<circle cx="{sx+4}" cy="25" r="4" fill="{color}"/>')
+            p.append(f'<text x="{sx+12}" y="29" fill="{HM_MUTED}" font-size="11">{name} {human(tok)}</text>')
             sx += 34 + (len(name) + len(human(tok))) * 7
 
     gx, gy = pad + left, top
@@ -221,7 +220,7 @@ def render(svg_rel=SVG_REL):
 
     card = f"""{START}
 
-### 🤖 我的 AI 使用量
+### 🤖 My AI Usage
 
 {badges}
 
