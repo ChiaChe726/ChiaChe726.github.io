@@ -39,22 +39,24 @@ if [ -d "tools/claude-usage-profile/data/usage" ]; then
 else
   USAGE_DIR="data/usage"
 fi
+ASSETS="assets"   # 熱力圖 SVG 放這裡(render_readme.py 寫到 README 同目錄的 assets/)
 
 # 把要追蹤的檔案加進來(-f 強制,繞過範本帶來的 .gitignore 對 data/usage 的忽略)。
 # 之後用 --cached 比對:這樣「第一次推、全新空 repo」那種「新檔案」也偵測得到
 # —— git diff(working tree)不會看 untracked 檔,會把新檔案誤判成「沒變化」。
 git add -f README.md 2>/dev/null || true
 git add -f "$USAGE_DIR" 2>/dev/null || true
+git add -f "$ASSETS" 2>/dev/null || true
 
-# 只比對 / 只提交「這兩個路徑」— 避免把使用者在工作區裡其他已 staged 的檔案
+# 只比對 / 只提交這幾個路徑 — 避免把使用者在工作區裡其他已 staged 的檔案
 # 一起併進這個 commit(尤其這支腳本被 Stop hook 在背景自動執行時)。
-if git diff --cached --quiet -- README.md "$USAGE_DIR"; then
+if git diff --cached --quiet -- README.md "$USAGE_DIR" "$ASSETS"; then
   echo "ℹ️ 使用量沒有變化,不需要推送。"
   exit 0
 fi
 
 echo "▶ 提交並推送…"
-git commit -q -m "chore: update AI usage stats" -- README.md "$USAGE_DIR" || true
+git commit -q -m "chore: update AI usage stats" -- README.md "$USAGE_DIR" "$ASSETS" || true
 
 # 推送 + 網路失敗時退避重試(2s,4s,8s,16s)
 branch="$(git rev-parse --abbrev-ref HEAD)"
