@@ -1,8 +1,13 @@
 # 自動合併 Dependabot 開的「小改版」更新 PR(patch / minor)。
 # 大改版(major)不自動合,留給你手動檢視,因為比較可能弄壞網站。
 #
-# 注意:這需要在 repo 的 Settings → General 勾選 "Allow auto-merge"。
-# 合併會等 CI(上面的 build)通過後才真的發生,不會盲合。
+# 設計原則:自動合併是「盡力而為」的便利功能。GitHub API 偶爾會對「剛開好」
+# 的 PR 短暫回 404(例如 fetch-metadata 去列 commit 時),這屬於暫時性錯誤。
+# 因此這裡讓讀 metadata 與合併步驟「失敗也不讓整個流程失敗寄信」——
+# 略過即可,等下次 Dependabot 更新或 rebase 時會自動再跑一次。
+#
+# 注意:要真的自動合併,需在 repo Settings → General 勾選 "Allow auto-merge"。
+# 合併會等 CI(build)通過後才真的發生,不會盲合。
 name: Dependabot auto-merge
 
 on: pull_request_target
@@ -14,19 +19,22 @@ permissions:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    # 只處理 Dependabot 自己開的 PR
-    if: github.actor == 'dependabot[bot]'
+    # 只處理 Dependabot 自己開的 PR(用 PR 作者判斷,比 github.actor 更可靠)
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
       - name: Fetch Dependabot metadata
         id: meta
         uses: dependabot/fetch-metadata@v3
+        # 暫時性 API 404 不應讓整個流程失敗並寄信;略過,下次更新會再試。
+        continue-on-error: true
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      # patch / minor → 開啟 auto-merge(CI 綠了才會真的合)
+      # patch / minor 且 metadata 有成功讀到 → 開啟 auto-merge(CI 綠了才會真的合)
       - name: Enable auto-merge for minor/patch updates
-        if: steps.meta.outputs.update-type == 'version-update:semver-patch' || steps.meta.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr merge --auto --squash "$PR_URL"
+        if: steps.meta.outcome == 'success' && (steps.meta.outputs.update-type == 'version-update:semver-patch' || steps.meta.outputs.update-type == 'version-update:semver-minor')
+        # 合併指令失敗(例如尚未啟用 auto-merge)也不讓流程失敗,留待手動處理。
+        run: gh pr merge --auto --squash "$PR_URL" || echo "::notice::auto-merge 未啟用或 PR 暫不可合併,留待手動合併。"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
