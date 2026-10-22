@@ -1,16 +1,27 @@
-# 在每次 push 到 main 與每個 PR 上,確認網站還能正常 build。
-# 這個檢查的綠燈,也是下面 dependabot-auto-merge 自動合併的前提門檻。
+# 在每次 push 到 main 與每個 PR 上,確認網站還能正常 build,並跑測試點(npm test)。
+# 這個檢查的綠燈,是 dependabot-auto-merge 自動合併的前提門檻。
+#
+# 測試點(scripts/check-build.mjs):
+#   - 必要檔案都在:首頁、英文首頁、部落格、404、sitemap
+#   - 頁面數量不低於下限
+#   - 每個 HTML 都有非空的 <title>
+#   - HTML 引用的站內 JS／CSS／圖片在 build/ 裡都找得到
+#   (站內頁面之間的連結,由 docusaurus.config.js 的 onBrokenLinks: 'throw' 在 build 時把關)
 name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 # 只跑最新一次;同分支有新 push 時取消舊的,省時間。
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -29,3 +40,17 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: 測試點:檢查 build 輸出
+        run: npm test
+
+      # 只寫進報告、不擋流程:有些漏洞上游還沒有修補版(例如 braces),擋了會讓所有更新都卡住。
+      - name: 安全稽核報告(不擋流程)
+        if: always()
+        run: |
+          {
+            echo "## npm audit"
+            echo '```'
+            npm audit --audit-level=none 2>&1 | tail -n 25 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

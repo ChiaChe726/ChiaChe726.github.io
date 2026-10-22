@@ -8,10 +8,12 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"            # package.json 的位置(專案根目錄)
     schedule:
-      interval: "weekly"      # 每週檢查一次,而不是每天洗版
-    open-pull-requests-limit: 5
+      interval: "daily"       # 每天檢查;CI 綠燈就自動合併與部署,不用人工處理
+    open-pull-requests-limit: 10
     # 把小改版(minor / patch)合併成「一個」PR,避免一個漏洞開一個 PR。
-    # 大改版(major)維持獨立 PR,因為比較可能弄壞網站,要單獨檢視。
+    # 大改版(major)維持獨立 PR,方便出問題時單獨回退;
+    # 一樣是 CI(build + 測試點)綠燈就自動合併(見 workflows/dependabot-auto-merge.yml)。
+    # 安全性更新(security updates)不受 schedule 影響,一有警示就會發 PR。
     groups:
       minor-and-patch:
         patterns:
