@@ -1,5 +1,7 @@
 # 自動把網站 build 出來並部署到 GitHub Pages。
 # 每次 push 到 main(例如合併 PR)就會自動更新線上網站。
+# 機器人(GITHUB_TOKEN)合併或推送的 commit 不會觸發 push 事件,所以
+# dependabot-auto-merge.yml 與 security-auto-fix.yml 完成後會用 workflow_dispatch 主動叫這支。
 #
 # ⚠️ 需要在 GitHub 網頁設定一次:
 #    Settings → Pages → Build and deployment → Source 選「GitHub Actions」
@@ -40,6 +42,10 @@ jobs:
 
       - name: Build website
         run: npm run build
+
+      # 部署前最後一道關卡:測試點沒過就不上線(失敗時 GitHub 會寄信通知)
+      - name: 測試點:檢查 build 輸出
+        run: npm test
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

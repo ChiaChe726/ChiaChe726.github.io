@@ -1,0 +1,90 @@
+# 每天自動跑 npm audit fix(不加 --force),補上 Dependabot 處理不到的間接相依更新。
+#
+# 流程:有變動 → 重新安裝、build、測試點(npm test)都通過 → 推到 main → 部署。
+# 任何一步失敗就停,不會推、不會部署;GitHub 會寄信通知這個 workflow 失敗。
+#
+# 為什麼直接推 main、不開 PR:
+#   - 本 repo 的「Allow GitHub Actions to create and approve pull requests」是關的,
+#     GITHUB_TOKEN 開不了 PR。
+#   - 這個 job 已經跑過 build 與測試點,效果等同 CI 綠燈。
+#   - commit 訊息會記下修前／修後的 npm audit 數字。
+#
+# 不會在這裡處理的:要跨大版本才修得掉的套件(需要在 package.json 的 overrides 手動指定),
+# 以及上游還沒有修補版的套件。
+name: Daily security fix
+
+on:
+  schedule:
+    - cron: "17 2 * * *" # 每天 UTC 02:17(台灣 10:17)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: security-auto-fix
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: 修前稽核
+        id: before
+        run: echo "summary=$(npm audit --json 2>/dev/null | node scripts/audit-summary.mjs)" >> "$GITHUB_OUTPUT"
+
+      - name: npm audit fix(不加 --force)
+        # 還有修不掉的漏洞時 npm 會回傳非 0,這不算失敗;有沒有修到看下一步的 git diff
+        run: npm audit fix --no-fund || true
+
+      - name: 有沒有變動
+        id: diff
+        env:
+          BEFORE: ${{ steps.before.outputs.summary }}
+        run: |
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::沒有可自動修補的套件(修前:$BEFORE)。"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 重新安裝、build、測試點
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm ci
+          npm run build
+          npm test
+
+      - name: 推到 main
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          BEFORE: ${{ steps.before.outputs.summary }}
+        run: |
+          after=$(npm audit --json 2>/dev/null | node scripts/audit-summary.mjs)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "安全更新：每日 npm audit fix" \
+                     -m "修前：$BEFORE" \
+                     -m "修後：$after" \
+                     -m "已在同一個 workflow 通過 npm ci、npm run build 與測試點（npm test）。"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: 部署
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy.yml -R "$GITHUB_REPOSITORY" --ref main
